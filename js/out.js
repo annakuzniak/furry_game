@@ -65,28 +65,49 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-document.addEventListener('DOMContentLoaded', function () {
+var Game = __webpack_require__(1);
+
+var game = new Game();
+game.showFurry();
+game.showCoin();
+game.startGame();
+document.addEventListener('keydown', function(event){
+    game.turnFurry(event);
+});
+
+var again = document.querySelector(".button");
+again.addEventListener('click', function() {
+    var newGame = new Game();
+    var over = document.querySelector('#over');
+    over.classList.add("invisible");
+
+    newGame.showFurry();
+    newGame.showCoin();
+    newGame.startGame();
+    document.addEventListener('keydown', function(event){
+        newGame.turnFurry(event);
+    });
+});
 
 
-var Furry = function(){
-    this.x = 0;
-    this.y = 0;
-    this.direction = 'right';
-};
 
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
 
-var Coin = function() {
-    this.x = Math.floor(Math.random()*10);
-    this.y = Math.floor(Math.random()*10);
-};
+var Furry = __webpack_require__(2);
+var Coin = __webpack_require__(3);
 
 var Game = function() {
     this.board = document.querySelectorAll('#board div');
     this.furry = new Furry();
     this.coin = new Coin();
     this.score = 0;
+
+    this.htmlScore = document.querySelector('#score strong');
+    this.htmlScore.innerText = this.score;
 
     this.index = function(x, y) {
         return x + (y * 10);
@@ -121,14 +142,16 @@ var Game = function() {
             this.furry.y += 1;
         }
 
+        this.gameOver();
         this.showFurry();
+        this.checkCoinCollision();
     };
 
     this.startGame = function() {
         var self = this;
         this.idSetInterval = setInterval( function() {
             self.moveFurry();
-        }, 2500);
+        }, 250);
     };
 
     this.turnFurry = function(event) {
@@ -147,18 +170,58 @@ var Game = function() {
         }
     };
 
+    this.checkCoinCollision = function () {
+        if (this.coin.x === this.furry.x && this.coin.y === this.furry.y) {
+            this.board[ this.index(this.coin.x, this.coin.y) ].classList.remove('coin');
+
+            this.score++;
+            this.htmlScore.innerText = this.score;
+
+            this.coin = new Coin();
+            this.showCoin();
+        }
+    };
+
+    this.gameOver = function () {
+        if (this.furry.x < 0 || this.furry.x > 9 || this.furry.y < 0 || this.furry.y > 9) {
+            clearInterval(this.idSetInterval);
+            this.board[ this.index(this.coin.x, this.coin.y) ].classList.remove('coin');
+
+            this.over = document.querySelector('#over');
+            this.over.classList.remove("invisible");
+
+            this.result = over.querySelector("span");
+            this.result.innerText = ' ' + this.score;
+
+            this.hideVisibleFurry();
+        }
+    };
 };
-var game = new Game();
-game.showFurry();
-game.showCoin();
-game.startGame();
-document.addEventListener('keydown', function(event){
-    game.turnFurry(event);
-});
-});
 
+module.exports = Game;
 
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
 
+var Furry = function(){
+    this.x = 0;
+    this.y = 0;
+    this.direction = 'right';
+}
+
+module.exports = Furry;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+var Coin = function() {
+    this.x = Math.floor(Math.random()*10);
+    this.y = Math.floor(Math.random()*10);
+}
+
+module.exports = Coin;
 
 /***/ })
 /******/ ]);
